@@ -41,6 +41,7 @@ const browserCreateRequestSchema = z.object({
   ttl: z.number().min(30).max(3600).default(300),
   activityTtl: z.number().min(10).max(3600).default(120),
   streamWebView: z.boolean().default(true),
+  origin: z.string().optional(),
   profile: z
     .object({
       name: z.string().min(1).max(128),
@@ -209,7 +210,7 @@ export async function browserCreateController(
 
   req.body = browserCreateRequestSchema.parse(req.body);
 
-  const { ttl, activityTtl, streamWebView, profile } = req.body;
+  const { ttl, activityTtl, streamWebView, origin, profile } = req.body;
 
   if (!config.BROWSER_SERVICE_URL) {
     return res.status(503).json({
@@ -323,9 +324,9 @@ export async function browserCreateController(
       api_version: "v2",
       team_id: req.auth.team_id,
       target_hint: "Browser session",
-      origin: "api",
       zeroDataRetention: false,
       api_key_id: req.acuc!.api_key_id,
+      origin: origin ?? "api",
     });
     await insertBrowserSession({
       id: sessionId,
